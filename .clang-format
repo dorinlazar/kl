@@ -1,0 +1,12 @@
+BasedOnStyle: LLVM
+IndentWidth: 2
+TabWidth: 2
+PointerAlignment: Left
+AllowAllArgumentsOnNextLine: No
+BinPackArguments: Yes
+SpaceBeforeRangeBasedForLoopColon: No
+ColumnLimit: 120
+AlwaysBreakTemplateDeclarations: Yes
+AllowShortCaseLabelsOnASingleLine: Yes
+Standard: c++20
+SortIncludes: Never
