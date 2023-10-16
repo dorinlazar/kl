@@ -1,6 +1,6 @@
 #pragma once
 #include <exception>
-#include "kl/kltext.hpp"
+#include <kl/kltext.hpp>
 
 namespace kl {
 class ParsingError : public std::logic_error {
