@@ -1,4 +1,6 @@
 #include "klargparser.hpp"
+
+#include <format>
 #include "klexcept.hpp"
 
 namespace kl {
@@ -26,6 +28,16 @@ ArgumentParser& ArgumentParser::create_subparser(kl::Text feature) {
   auto parser = new ArgumentParser();
   m_children.emplace(feature, std::unique_ptr<ArgumentParser>{parser});
   return *parser;
+}
+
+List<Text> ArgumentParser::get_help() const {
+  List<Text> result;
+
+  result.add(Text{std::format("Usage: {} [OPTIONS]...", m_prog_name)});
+  result.add(m_description);
+
+  result.add(m_epilogue);
+  return result;
 }
 
 } // namespace kl

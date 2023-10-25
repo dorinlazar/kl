@@ -26,6 +26,8 @@ public:
   void add(const Argument& argument);
   ArgumentParser& create_subparser(kl::Text feature);
 
+  List<Text> get_help() const;
+
 private:
   ArgumentParser();
   bool m_child_parser = false;
