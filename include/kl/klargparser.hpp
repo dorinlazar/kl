@@ -9,7 +9,7 @@ namespace kl {
 struct Argument {
   char short_arg = '\0';
   Text long_arg = {};
-  int n_params = 0;
+  bool has_param = false;
   Text info;
 };
 
@@ -24,7 +24,7 @@ public:
   ~ArgumentParser() = default;
 
   void add(const Argument& argument);
-  ArgumentParser& create_subparser(kl::Text feature);
+  // ArgumentParser& create_subparser(kl::Text feature);
 
   List<Text> get_help() const;
 
@@ -36,6 +36,7 @@ private:
   Text m_description;
   Text m_epilogue;
   std::vector<Argument> m_arguments;
+  size_t m_large_param_length = 0;
 };
 
 } // namespace kl
