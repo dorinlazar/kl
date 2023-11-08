@@ -7,6 +7,7 @@
 namespace kl {
 
 // TODO:
+// - Use `deducing this` to eliminate redundat implementation
 // - Implement cursors.
 // - Implement own replacement for std::vector with copy-on-write strategy
 
@@ -20,12 +21,7 @@ public:
   explicit List(size_t size) { m_vec.reserve(size); }
   void clear() { m_vec.clear(); }
 
-  bool operator==(const List<T>& l) const {
-    if (&l == this) {
-      return true;
-    }
-    return m_vec == l.m_vec;
-  }
+  bool operator==(const List<T>& l) const = default;
 
   [[nodiscard]] auto& operator[](size_t pos) {
     if (pos >= m_vec.size()) {

@@ -90,7 +90,7 @@ TEST(klvalue, test_value_map) {
   EXPECT_TRUE(v["map"]["m02"] == "m02_value");
   EXPECT_TRUE(v["map"]["m03"] == "m03_value");
 
-  EXPECT_THROW(v["nonmap"], std::out_of_range);
+  EXPECT_THROW(v["nonmap"], kl::Exception);
 }
 
 TEST(klvalue, test_value_getopt) {
