@@ -19,13 +19,6 @@ TextView::TextView(const char* text) {
     m_view = std::string_view(WHITESPACE.begin(), WHITESPACE.begin());
   }
 }
-TextView::TextView(const char* text, size_t length) {
-  if (text != nullptr) {
-    m_view = std::string_view(text, std::min(length, strlen(text)));
-  } else {
-    m_view = std::string_view(WHITESPACE.begin(), WHITESPACE.begin());
-  }
-}
 
 TextView TextView::trim() const { return trim_left().trim_right(); }
 TextView TextView::trim_left() const { return skip(WHITESPACE); }
@@ -837,7 +830,6 @@ Text Text::skip_bom() const {
 
 inline namespace literals {
 Text operator"" _t(const char* p, size_t s) { return {p, s}; }
-TextView operator"" _tv(const char* p, size_t s) { return {p, s}; }
 } // namespace literals
 
 size_t TextChain::size() const { return m_length; }

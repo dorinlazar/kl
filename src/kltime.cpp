@@ -250,7 +250,7 @@ std::tuple<bool, int32_t, int32_t> kltime_read_timezone(TextScanner& sc) {
 DateTime DateTime::parse(const Text& src) {
   const size_t min_date_length = 8;
   if (src.size() < min_date_length) [[unlikely]] {
-    throw InvalidInputData(src, "A valid date has at least 8 characters"_t);
+    throw Exception::InvalidInputData(src.to_string(), "A valid date has at least 8 characters");
   }
   TextScanner sc(src);
   const auto [year, month, day] = kltime_read_date(sc);

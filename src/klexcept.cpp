@@ -1,16 +1,21 @@
 #include "klexcept.hpp"
+#include <cstring>
 
 namespace kl {
 
-KlException::KlException(Text message) : std::logic_error({message.begin(), message.end()}) {}
+Exception::Exception(const char* message) : std::logic_error(message) {}
+Exception::Exception(const std::string& message) : std::logic_error(message) {}
 
-OperationNotSupported::OperationNotSupported(Text op, Text reason)
-    : KlException(("Operation not supported"_t + op + ": " + reason).to_text()) {}
+Exception Exception::OperationNotSupported(const std::string& op, const std::string& reason) {
+  return Exception("Operation not supported" + op + ": " + reason);
+}
+Exception Exception::InvalidInputData(const std::string& received, const std::string& expected) {
+  return Exception("Invalid input data: [" + received + "], expected: [" + expected + "]");
+}
 
-InvalidInputData::InvalidInputData(Text received, Text expected)
-    : KlException(("Invalid input data: [" + received + "], expected: [" + expected + "]"_t).to_text()) {}
+Exception Exception::DuplicateIndex(const std::string& where) { return Exception("Duplicate index: " + where); }
 
-IOException::IOException(Text why) : KlException(("IOException: "_t + why).to_text()) {}
-IOException IOException::current_standard_error() { return IOException{strerror(errno)}; }
+Exception Exception::IOException(const std::string& why) { return Exception("IOException: " + why); }
+Exception Exception::CurrentStandardIOError() { return IOException(strerror(errno)); }
 
 } // namespace kl

@@ -2,34 +2,19 @@
 
 #include <exception>
 #include <stdexcept>
-#include "kltext.hpp"
+#include <string>
 
 namespace kl {
 
-class KlException : public std::logic_error {
+class Exception : public std::logic_error {
 public:
-  explicit KlException(Text message);
-};
-
-class OperationNotSupported : public KlException {
-public:
-  OperationNotSupported(Text op, Text reason);
-};
-
-class InvalidInputData : public KlException {
-public:
-  InvalidInputData(Text received, Text expected);
-};
-
-class DuplicateIndex : public KlException {
-public:
-  explicit DuplicateIndex(Text index);
-};
-
-class IOException : KlException {
-public:
-  explicit IOException(Text why);
-  static IOException current_standard_error();
+  explicit Exception(const char* message);
+  explicit Exception(const std::string& message);
+  static Exception OperationNotSupported(const std::string& op, const std::string& reason);
+  static Exception InvalidInputData(const std::string& received, const std::string& expected);
+  static Exception DuplicateIndex(const std::string& where);
+  static Exception IOException(const std::string& why);
+  static Exception CurrentStandardIOError();
 };
 
 } // namespace kl

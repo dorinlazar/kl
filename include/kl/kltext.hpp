@@ -18,11 +18,19 @@ enum class SplitEmpty { Keep, Discard };
 enum class SplitDirection { KeepLeft, Discard, KeepRight };
 
 class TextView {
+  static constexpr std::string_view WHITESPACE{" \t\n\r"};
+
 public:
   TextView();
   TextView(std::string_view v);
   TextView(const char* text);
-  TextView(const char* text, size_t length);
+  constexpr TextView(const char* text, size_t length) {
+    if (text != nullptr) {
+      m_view = std::string_view(text, std::min(length, strlen(text)));
+    } else {
+      m_view = std::string_view(WHITESPACE.begin(), WHITESPACE.begin());
+    }
+  }
   TextView(const TextView&) = default;
   TextView(TextView&&) noexcept = default;
   TextView& operator=(const TextView&) = default;
@@ -250,7 +258,7 @@ public:
 
 inline namespace literals {
 kl::Text operator"" _t(const char* p, size_t s);
-kl::TextView operator"" _tv(const char* p, size_t s);
+constexpr kl::TextView operator"" _tv(const char* p, size_t s) { return {p, s}; }
 } // namespace literals
 
 std::ostream& operator<<(std::ostream& os, const kl::TextView& tv);

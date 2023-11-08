@@ -3,7 +3,7 @@
 #include <functional>
 #include <source_location>
 #include <format>
-// #include <fmt/ranges.h>
+#include <memory>
 
 // TODO(dorin): use std::print
 
@@ -59,5 +59,11 @@ inline void expect_ex(std::function<void()> op,
     fatal("Invalid exception triggered at: {:s}:{:d}", location.file_name(), location.line());
   }
 }
+
+template <typename T>
+using ptr = std::shared_ptr<T>;
+
+template <typename T>
+using uptr = std::unique_ptr<T>;
 
 } // namespace kl

@@ -12,10 +12,10 @@ ArgumentParser::ArgumentParser(Text prog_name, Text description, Text epilog)
 void ArgumentParser::add(const Argument& argument) {
   for (const auto& arg: m_arguments) {
     if (argument.short_arg == arg.short_arg) {
-      throw DuplicateIndex(Text{argument.short_arg});
+      throw Exception::DuplicateIndex(Text(argument.short_arg).to_string());
     }
     if (argument.long_arg == arg.long_arg) {
-      throw DuplicateIndex(argument.long_arg);
+      throw Exception::DuplicateIndex(argument.long_arg.to_string());
     }
   }
   m_large_param_length = std::max(m_large_param_length, argument.long_arg.size());

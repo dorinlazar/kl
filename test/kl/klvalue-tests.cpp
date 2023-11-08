@@ -53,7 +53,7 @@ TEST(klvalue, test_value_list) {
   EXPECT_TRUE(v[2][2].get_value() == "230"_t);
   EXPECT_TRUE(v[2][3].get_value() == "240"_t);
   EXPECT_TRUE(v[2][4].get_value() == "250"_t);
-  EXPECT_THROW(v[10], std::out_of_range);
+  EXPECT_THROW(v[10], kl::Exception);
 }
 
 TEST(klvalue, test_value_map) {
