@@ -128,4 +128,7 @@ public: // enumerable flow functionality
   void flow_advance(LinearCursor& cursor) const { cursor.inc(); }
 };
 
+template <typename T>
+using PList = List<uptr<T>>;
+
 } // namespace kl
