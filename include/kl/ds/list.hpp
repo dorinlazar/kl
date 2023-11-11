@@ -3,6 +3,7 @@
 #include <kl/kl.hpp>
 #include <vector>
 #include <kl/klexcept.hpp>
+#include <kl/ds/cursor.hpp>
 
 namespace kl {
 
@@ -108,6 +109,23 @@ public:
     return res;
   }
   T& last() { return m_vec.back(); }
+
+public: // enumerable flow functionality
+  LinearCursor flow_start() const { return {0uz}; }
+  bool flow_is_valid(LinearCursor cursor) const { return cursor.pos() < m_vec.size(); }
+  const T& flow_at(LinearCursor cursor) const& {
+    if (flow_is_valid(cursor)) [[likely]] {
+      return m_vec[cursor.pos()];
+    }
+    throw Exception("Invalid index access");
+  }
+  T& flow_at(LinearCursor cursor) & {
+    if (flow_is_valid(cursor)) [[likely]] {
+      return m_vec[cursor.pos()];
+    }
+    throw Exception("Invalid index access");
+  }
+  void flow_advance(LinearCursor& cursor) const { cursor.inc(); }
 };
 
 } // namespace kl
