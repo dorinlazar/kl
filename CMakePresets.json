@@ -10,13 +10,26 @@
       "name": "default",
       "displayName": "Default Config",
       "description": "Default build",
-      "binaryDir": "${sourceDir}/build"
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Default Config",
+      "description": "Default build",
+      "binaryDir": "${sourceDir}/build-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INTERPROCEDURAL_OPTIMIZATION": true
+      }
     },
     {
       "name": "coverage",
       "displayName": "Configuration for coverage",
       "description": "Configuration for coverage",
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/build-coverage",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "COVERAGE_ENABLED": "ON"
