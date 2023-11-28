@@ -1,5 +1,6 @@
 #pragma once
 
+#include <kl/ds/array.hpp>
 #include <kl/ds/list.hpp>
 #include <kl/ds/dict.hpp>
 #include <kl/ds/set.hpp>

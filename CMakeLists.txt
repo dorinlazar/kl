@@ -28,20 +28,25 @@ set(LIBRARY_SOURCES
     src/textscanner.cpp)
 
 set(LIBRARY_HEADERS
-    include/${LIBRARY_NAME}/klflags.hpp
-    include/${LIBRARY_NAME}/klfs.hpp
-    include/${LIBRARY_NAME}/klexcept.hpp
-    include/${LIBRARY_NAME}/kl.hpp
-    include/${LIBRARY_NAME}/klio.hpp
-    include/${LIBRARY_NAME}/klnet.hpp
-    include/${LIBRARY_NAME}/klprocess.hpp
-    include/${LIBRARY_NAME}/kltext.hpp
-    include/${LIBRARY_NAME}/kltimecounter.hpp
-    include/${LIBRARY_NAME}/kltime.hpp
-    include/${LIBRARY_NAME}/klvalue.hpp
-    include/${LIBRARY_NAME}/klds.hpp
-    include/${LIBRARY_NAME}/klargparser.hpp
-    include/${LIBRARY_NAME}/textscanner.hpp)
+    include/kl/ds/array.hpp
+    include/kl/ds/cursor.hpp
+    include/kl/ds/dict.hpp
+    include/kl/ds/list.hpp
+    include/kl/ds/set.hpp
+    include/kl/klflags.hpp
+    include/kl/klfs.hpp
+    include/kl/klexcept.hpp
+    include/kl/kl.hpp
+    include/kl/klio.hpp
+    include/kl/klnet.hpp
+    include/kl/klprocess.hpp
+    include/kl/kltext.hpp
+    include/kl/kltimecounter.hpp
+    include/kl/kltime.hpp
+    include/kl/klvalue.hpp
+    include/kl/klds.hpp
+    include/kl/klargparser.hpp
+    include/kl/textscanner.hpp)
 
 add_library(${LIBRARY_NAME} ${LIBRARY_SOURCES} ${LIBRARY_HEADERS})
 
