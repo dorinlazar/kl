@@ -43,6 +43,7 @@ set(LIBRARY_HEADERS
     include/kl/kltext.hpp
     include/kl/kltimecounter.hpp
     include/kl/kltime.hpp
+    include/kl/memory.hpp
     include/kl/klvalue.hpp
     include/kl/klds.hpp
     include/kl/klargparser.hpp
