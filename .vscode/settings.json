@@ -3,5 +3,8 @@
   "editor.tabSize": 2,
   "[cpp]": {
     "editor.formatOnSave": true
+  },
+  "files.associations": {
+    "exception": "cpp"
   }
 }

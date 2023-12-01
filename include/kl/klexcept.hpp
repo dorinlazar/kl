@@ -6,15 +6,15 @@
 
 namespace kl {
 
-class Exception : public std::logic_error {
+class RuntimeError : public std::runtime_error {
 public:
-  explicit Exception(const char* message);
-  explicit Exception(const std::string& message);
-  static Exception OperationNotSupported(const std::string& op, const std::string& reason);
-  static Exception InvalidInputData(const std::string& received, const std::string& expected);
-  static Exception DuplicateIndex(const std::string& where);
-  static Exception IOException(const std::string& why);
-  static Exception CurrentStandardIOError();
+  explicit RuntimeError(const char* message);
+  explicit RuntimeError(const std::string& message);
+  static RuntimeError OperationNotSupported(const std::string& op, const std::string& reason);
+  static RuntimeError InvalidInputData(const std::string& received, const std::string& expected);
+  static RuntimeError DuplicateIndex(const std::string& where);
+  static RuntimeError IOException(const std::string& why);
+  static RuntimeError CurrentStandardIOError();
 };
 
 } // namespace kl

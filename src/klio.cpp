@@ -13,19 +13,19 @@ bool Stream::can_write() { return false; }
 bool Stream::can_seek() { return false; }
 bool Stream::can_timeout() { return false; }
 
-size_t Stream::size() { throw Exception::OperationNotSupported("Stream::size", s_not_implemented); }
-size_t Stream::position() { throw Exception::OperationNotSupported("Stream::position", s_not_implemented); }
+size_t Stream::size() { throw RuntimeError::OperationNotSupported("Stream::size", s_not_implemented); }
+size_t Stream::position() { throw RuntimeError::OperationNotSupported("Stream::position", s_not_implemented); }
 size_t Stream::read([[maybe_unused]] std::span<uint8_t> where) {
-  throw Exception::OperationNotSupported("Stream::read", s_not_implemented);
+  throw RuntimeError::OperationNotSupported("Stream::read", s_not_implemented);
 }
 void Stream::write([[maybe_unused]] std::span<uint8_t> what) {
-  throw Exception::OperationNotSupported("Stream::write", s_not_implemented);
+  throw RuntimeError::OperationNotSupported("Stream::write", s_not_implemented);
 }
 void Stream::seek([[maybe_unused]] size_t offset) {
-  throw Exception::OperationNotSupported("Stream::seek", s_not_implemented);
+  throw RuntimeError::OperationNotSupported("Stream::seek", s_not_implemented);
 }
-bool Stream::data_available() { throw Exception::OperationNotSupported("Stream::data_available", s_not_implemented); }
-void Stream::flush() { throw Exception::OperationNotSupported("Stream::flush", s_not_implemented); }
+bool Stream::data_available() { throw RuntimeError::OperationNotSupported("Stream::data_available", s_not_implemented); }
+void Stream::flush() { throw RuntimeError::OperationNotSupported("Stream::flush", s_not_implemented); }
 void Stream::close() {}
 bool Stream::end_of_stream() { return false; }
 
@@ -133,7 +133,7 @@ size_t PosixFileStream::size() {
   if (m_regular) {
     struct stat statbuf;
     if (::fstat(m_fd, &statbuf) != 0) [[unlikely]] {
-      throw Exception::CurrentStandardIOError();
+      throw RuntimeError::CurrentStandardIOError();
     };
     return statbuf.st_size;
   }
@@ -144,7 +144,7 @@ size_t PosixFileStream::position() {
   if (m_regular) {
     auto pos = ::lseek(m_fd, 0, SEEK_CUR);
     if (pos < 0) [[unlikely]] {
-      throw Exception::CurrentStandardIOError();
+      throw RuntimeError::CurrentStandardIOError();
     }
     return pos;
   }
@@ -154,7 +154,7 @@ size_t PosixFileStream::position() {
 size_t PosixFileStream::read(std::span<uint8_t> where) {
   auto res = ::read(m_fd, where.data(), where.size());
   if (res < 0) [[unlikely]] {
-    throw Exception::CurrentStandardIOError();
+    throw RuntimeError::CurrentStandardIOError();
   }
   return res;
 }
@@ -165,7 +165,7 @@ void PosixFileStream::write(std::span<uint8_t> what) {
   while (offset < what.size()) {
     auto bytes_written = ::write(m_fd, what.data() + offset, what.size() - offset);
     if (bytes_written < 0) [[unlikely]] {
-      throw Exception::CurrentStandardIOError();
+      throw RuntimeError::CurrentStandardIOError();
     }
     offset += bytes_written;
   }
@@ -173,7 +173,7 @@ void PosixFileStream::write(std::span<uint8_t> what) {
 
 void PosixFileStream::seek(size_t offset) {
   if (lseek(m_fd, static_cast<off_t>(offset), SEEK_SET) < 0) [[unlikely]] {
-    throw Exception::CurrentStandardIOError();
+    throw RuntimeError::CurrentStandardIOError();
   }
 }
 
@@ -189,12 +189,12 @@ bool PosixFileStream::end_of_stream() {
   if (m_regular) [[likely]] {
     return position() >= size();
   }
-  throw Exception::OperationNotSupported("End of stream", "non-regular file");
+  throw RuntimeError::OperationNotSupported("End of stream", "non-regular file");
 }
 
 void PosixFileStream::flush() {
   if (fdatasync(m_fd) < 0) [[unlikely]] {
-    throw Exception::CurrentStandardIOError();
+    throw RuntimeError::CurrentStandardIOError();
   }
 }
 

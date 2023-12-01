@@ -26,13 +26,13 @@ public:
 
   [[nodiscard]] auto& operator[](size_t pos) {
     if (pos >= m_vec.size()) {
-      throw Exception("Invalid index access");
+      throw RuntimeError("Invalid index access");
     }
     return m_vec[pos];
   }
   [[nodiscard]] const auto& operator[](size_t pos) const {
     if (pos >= m_vec.size()) {
-      throw Exception("Invalid index access");
+      throw RuntimeError("Invalid index access");
     }
     return m_vec[pos];
   }
@@ -117,13 +117,13 @@ public: // enumerable flow functionality
     if (flow_is_valid(cursor)) [[likely]] {
       return m_vec[cursor.pos()];
     }
-    throw Exception("Invalid index access");
+    throw RuntimeError("Invalid index access");
   }
   T& flow_at(LinearCursor cursor) & {
     if (flow_is_valid(cursor)) [[likely]] {
       return m_vec[cursor.pos()];
     }
-    throw Exception("Invalid index access");
+    throw RuntimeError("Invalid index access");
   }
   void flow_advance(LinearCursor& cursor) const { cursor.inc(); }
 };

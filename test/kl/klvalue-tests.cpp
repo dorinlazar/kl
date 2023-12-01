@@ -53,7 +53,7 @@ TEST(klvalue, test_value_list) {
   EXPECT_TRUE(v[2][2].get_value() == "230"_t);
   EXPECT_TRUE(v[2][3].get_value() == "240"_t);
   EXPECT_TRUE(v[2][4].get_value() == "250"_t);
-  EXPECT_THROW(v[10], kl::Exception);
+  EXPECT_THROW(v[10], kl::RuntimeError);
 }
 
 TEST(klvalue, test_value_map) {
@@ -90,7 +90,7 @@ TEST(klvalue, test_value_map) {
   EXPECT_TRUE(v["map"]["m02"] == "m02_value");
   EXPECT_TRUE(v["map"]["m03"] == "m03_value");
 
-  EXPECT_THROW(v["nonmap"], kl::Exception);
+  EXPECT_THROW(v["nonmap"], kl::RuntimeError);
 }
 
 TEST(klvalue, test_value_getopt) {

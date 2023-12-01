@@ -22,7 +22,7 @@ int connect_to_server(const Text& server, uint16_t port) {
   addrinfo* addresses = nullptr;
   auto callres = ::getaddrinfo(server.to_string().c_str(), std::to_string(port).c_str(), &hints, &addresses);
   if (0 != callres) {
-    throw Exception::IOException(gai_strerror(callres));
+    throw RuntimeError::IOException(gai_strerror(callres));
   }
 
   addrinfo* candidate = addresses;
@@ -40,7 +40,7 @@ int connect_to_server(const Text& server, uint16_t port) {
   auto res = ::connect(socketid, candidate->ai_addr, candidate->ai_addrlen);
   freeaddrinfo(addresses);
   if (0 != res) {
-    throw Exception::CurrentStandardIOError();
+    throw RuntimeError::CurrentStandardIOError();
   }
   log("Connected...");
   return socketid;
@@ -52,16 +52,16 @@ bool TcpClient::can_read() { return true; }
 bool TcpClient::can_write() { return true; }
 bool TcpClient::can_seek() { return false; }
 bool TcpClient::can_timeout() { return true; }
-size_t TcpClient::size() { throw Exception::OperationNotSupported("TcpClient::size()", ""); }
-size_t TcpClient::position() { throw Exception::OperationNotSupported("TcpClient::size()", ""); }
+size_t TcpClient::size() { throw RuntimeError::OperationNotSupported("TcpClient::size()", ""); }
+size_t TcpClient::position() { throw RuntimeError::OperationNotSupported("TcpClient::size()", ""); }
 
 bool TcpClient::data_available() {
   struct pollfd pfd = {.fd = m_fd, .events = POLLIN, .revents = 0};
   return ::poll(&pfd, 1, 0) > 0;
 }
 
-bool TcpClient::end_of_stream() { throw Exception::OperationNotSupported("TcpClient::end_of_stream()", ""); }
-void TcpClient::flush() { throw Exception::OperationNotSupported("TcpClient::flush()", ""); }
+bool TcpClient::end_of_stream() { throw RuntimeError::OperationNotSupported("TcpClient::end_of_stream()", ""); }
+void TcpClient::flush() { throw RuntimeError::OperationNotSupported("TcpClient::flush()", ""); }
 
 TimeSpan TcpClient::read_timeout() {
   struct timeval timeout;
@@ -120,7 +120,7 @@ struct SslClient::SslClientImpl {
     SSL_set_fd(m_ssl_handler, m_client.file_descriptor());
     auto res = SSL_connect(m_ssl_handler);
     if (res <= 0) {
-      throw Exception::IOException("SSL Connect error " + std::to_string(SSL_get_error(m_ssl_handler, res)));
+      throw RuntimeError::IOException("SSL Connect error " + std::to_string(SSL_get_error(m_ssl_handler, res)));
     }
   }
   SslClientImpl(const SslClientImpl&) = delete;
@@ -144,7 +144,7 @@ struct SslClient::SslClientImpl {
       if (err == SSL_ERROR_ZERO_RETURN) {
         return 0;
       }
-      throw Exception::IOException("SSL Read error " + std::to_string(err));
+      throw RuntimeError::IOException("SSL Read error " + std::to_string(err));
     }
     return res;
   }
@@ -152,7 +152,7 @@ struct SslClient::SslClientImpl {
   void write(std::span<uint8_t> what) const {
     auto res = SSL_write(m_ssl_handler, what.data(), static_cast<int>(what.size()));
     if (res <= 0) {
-      throw Exception::IOException("SSL Write error " + std::to_string(SSL_get_error(m_ssl_handler, res)));
+      throw RuntimeError::IOException("SSL Write error " + std::to_string(SSL_get_error(m_ssl_handler, res)));
     }
   }
 };

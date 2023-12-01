@@ -31,7 +31,7 @@ public:
   V& operator[](const K& key) {
     auto it = m_map.find(key);
     if (it == m_map.end()) {
-      throw Exception("Invalid key");
+      throw RuntimeError("Invalid key");
     }
     return it->second;
   }
@@ -39,7 +39,7 @@ public:
   const V& operator[](const K& key) const {
     auto it = m_map.find(key);
     if (it == m_map.end()) {
-      throw Exception("Invalid key");
+      throw RuntimeError("Invalid key");
     }
     return it->second;
   }
