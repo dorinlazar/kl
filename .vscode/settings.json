@@ -1,9 +1,7 @@
 {
-    "cmake.configureOnOpen": true,
-    "files.associations": {
-        "initializer_list": "cpp",
-        "memory": "cpp",
-        "stdexcept": "cpp"
-    },
-    "editor.tabSize": 2
+  "cmake.configureOnOpen": false,
+  "editor.tabSize": 2,
+  "[cpp]": {
+    "editor.formatOnSave": true
+  }
 }

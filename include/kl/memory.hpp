@@ -64,8 +64,10 @@ public:
   }
 
   constexpr void reset() {
-    Deleter()(m_ptr);
-    m_ptr = nullptr;
+    if (m_ptr != nullptr) [[likely]] {
+      Deleter()(m_ptr);
+      m_ptr = nullptr;
+    }
   }
 };
 

@@ -29,3 +29,29 @@ TEST(klmem, test_unique_ptr) {
   }
   ASSERT_EQ(allocation_count, 0);
 }
+
+static int deleter_count = 0;
+
+template <typename T>
+class CustomDeleter {
+public:
+  CustomDeleter() noexcept = default;
+  void operator()(T* ptr) {
+    delete ptr;
+    deleter_count++;
+  }
+};
+
+TEST(klmem, test_unique_ptr_deleter_not_called_twice) {
+  {
+    auto ptr = kl::UniquePtr<A, CustomDeleter<A>>(new A);
+    ASSERT_EQ(deleter_count, 0);
+  }
+  ASSERT_EQ(deleter_count, 1);
+  {
+    auto ptr = kl::UniquePtr<A, CustomDeleter<A>>(new A());
+    ptr = nullptr;
+    ASSERT_EQ(deleter_count, 2);
+  }
+  ASSERT_EQ(deleter_count, 2);
+}
