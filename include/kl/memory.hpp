@@ -21,10 +21,7 @@ class UniquePtr {
 
 public:
   constexpr UniquePtr(T* ptr = nullptr) : m_ptr(ptr) {}
-  constexpr UniquePtr(UniquePtr&& ptr) {
-    m_ptr = ptr.m_ptr;
-    ptr.m_ptr = nullptr;
-  }
+  constexpr UniquePtr(UniquePtr&& ptr) { m_ptr = ptr.release(); }
   UniquePtr(const UniquePtr& ptr) = delete;
   constexpr UniquePtr& operator=(UniquePtr&& ptr) {
     if (this != &ptr) {
@@ -40,18 +37,18 @@ public:
     return *this;
   }
 
-  ~UniquePtr() { reset(); }
+  constexpr ~UniquePtr() { reset(); }
 
   constexpr T& operator->() {
     if (m_ptr == nullptr) [[unlikely]] {
-      throw Exception("Null reference exception");
+      throw Exception("Null reference");
     }
     return *m_ptr;
   }
 
   constexpr T& operator*() {
     if (m_ptr == nullptr) [[unlikely]] {
-      throw Exception("Null reference exception");
+      throw Exception("Null reference");
     }
     return *m_ptr;
   }
@@ -71,14 +68,71 @@ public:
   }
 };
 
+template <typename T, class Deleter = DefaultMultiDeleter<T>>
+class UniqueArrayPtr {
+  T* m_ptr = nullptr;
+  size_t m_size = 0;
+
+public:
+  constexpr UniqueArrayPtr() noexcept = default;
+  constexpr UniqueArrayPtr(T* ptr, size_t size) : m_ptr(ptr), m_size(size) {}
+  constexpr UniqueArrayPtr(UniqueArrayPtr&& ptr) {
+    m_size = ptr.m_size;
+    m_ptr = ptr.release();
+  }
+  UniqueArrayPtr(const UniqueArrayPtr& ptr) = delete;
+  constexpr UniqueArrayPtr& operator=(UniqueArrayPtr&& ptr) {
+    if (this != &ptr) {
+      reset();
+      m_size = ptr.m_size;
+      m_ptr = ptr.release();
+    }
+    return *this;
+  }
+  UniqueArrayPtr& operator=(const UniqueArrayPtr& ptr) = delete;
+  constexpr UniqueArrayPtr& operator=(nullptr_t ptr) {
+    reset();
+    return *this;
+  }
+
+  constexpr ~UniqueArrayPtr() { reset(); }
+
+  constexpr T& operator[](size_t index) {
+    if (m_ptr == nullptr) [[unlikely]] {
+      throw Exception("Null reference");
+    }
+    if (index >= m_size) [[unlikely]] {
+      throw Exception("Out of range");
+    }
+    return *m_ptr;
+  }
+
+  constexpr T* get() const { return m_ptr; }
+  size_t size() const { return m_size; }
+  constexpr T* release() {
+    auto ptr = m_ptr;
+    m_ptr = nullptr;
+    m_size = 0;
+    return ptr;
+  }
+
+  constexpr void reset() {
+    if (m_ptr != nullptr) [[likely]] {
+      Deleter()(m_ptr);
+      m_ptr = nullptr;
+      m_size = 0;
+    }
+  }
+};
+
 template <typename T, typename... Args>
-UniquePtr<T> make_ptr(Args&&... args) {
+constexpr UniquePtr<T> make_ptr(Args&&... args) {
   return UniquePtr<T>(new T(std::forward<Args>(args)...));
 }
 
 template <typename T>
-UniquePtr<T, DefaultMultiDeleter<T>> make_ptr_multi(size_t size) {
-  return UniquePtr<T, DefaultMultiDeleter<T>>(new T[size]);
+constexpr UniqueArrayPtr<T> make_array_ptr(size_t size) {
+  return UniqueArrayPtr<T>(new T[size], size);
 }
 
 } // namespace kl

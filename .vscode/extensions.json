@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "ms-vscode.cpptools-extension-pack",
+    "ms-vscode.cmake-tools",
+    "cheshirekow.cmake-format",
+    "davidanson.vscode-markdownlint"
+  ]
+}
