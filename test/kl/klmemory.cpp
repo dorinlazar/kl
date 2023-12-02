@@ -72,6 +72,10 @@ public:
 };
 
 TEST(klmem, test_unique_ptr_deleter_not_called_twice) {
+  deletion_count = 0;
+  object_count = 0;
+  creation_count = 0;
+  deleter_count = 0;
   {
     auto ptr = kl::UniquePtr<A, CustomDeleter<A>>(new A);
     ASSERT_EQ(deleter_count, 0);
@@ -86,7 +90,9 @@ TEST(klmem, test_unique_ptr_deleter_not_called_twice) {
 }
 
 TEST(klmem, array_tests) {
+  deletion_count = 0;
   object_count = 0;
+  creation_count = 0;
   auto ptr = kl::make_array_ptr<A>(100);
   ASSERT_EQ(object_count, 100);
   ASSERT_NE(ptr.get(), nullptr);
@@ -138,4 +144,19 @@ TEST(klmem, array_tests) {
     ASSERT_EQ(ptr3.get(), nullptr);
     ASSERT_EQ(ptr3.size(), 0);
   }
+}
+
+TEST(klmem, test_pointer) {
+  deletion_count = 0;
+  object_count = 0;
+  creation_count = 0;
+  {
+    kl::Pointer<A> ptr(100);
+    ASSERT_EQ(object_count, 100);
+    ASSERT_EQ(creation_count, 1);
+    ASSERT_NO_THROW(ptr->foo());
+    ASSERT_NO_THROW((*ptr).foo());
+  }
+  ASSERT_EQ(object_count, 99);
+  ASSERT_EQ(deletion_count, 1);
 }

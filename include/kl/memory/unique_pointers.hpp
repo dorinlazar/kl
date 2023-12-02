@@ -1,19 +1,8 @@
 #pragma once
 #include <kl/klexcept.hpp>
+#include <kl/memory/deleters.hpp>
 
 namespace kl {
-
-template <typename T>
-struct DefaultDeleter {
-  DefaultDeleter() noexcept = default;
-  void operator()(T* ptr) { delete ptr; }
-};
-
-template <typename T>
-struct DefaultMultiDeleter {
-  DefaultMultiDeleter() noexcept = default;
-  void operator()(T* ptr) { delete[] ptr; }
-};
 
 template <typename T, class Deleter = DefaultDeleter<T>>
 class UniquePtr {
