@@ -5,12 +5,12 @@ namespace kl {
 
 template <typename T>
 struct RefCountedValue {
-  ssize_t reference_count = 1;
+  ssize_t reference_count = 0;
   T value;
 
   template <typename... Args>
   constexpr RefCountedValue(Args&&... args) : value(std::forward<Args>(args)...) {}
-  constexpr T* value_address() const noexcept { return &value; }
+  constexpr T* value_address() noexcept { return &value; }
   constexpr void add_new_ref() noexcept { reference_count++; }
   constexpr bool remove_and_check_alive() noexcept {
     reference_count--;
@@ -23,8 +23,12 @@ class SharedPointer {
   RefCountedValue<T>* m_ptr;
 
 public:
-  template <typename... Args>
-  constexpr SharedPointer(Args&&... args) : m_ptr(new RefCountedValue<T>(std::forward<Args>(args)...)) {}
+  constexpr SharedPointer(RefCountedValue<T>* ptr) : m_ptr(ptr) {
+    if (m_ptr) {
+      m_ptr->add_new_ref();
+    }
+  }
+
   constexpr SharedPointer(const SharedPointer& val) noexcept : m_ptr(val.m_ptr) {
     if (m_ptr) {
       m_ptr->add_new_ref();
@@ -42,10 +46,9 @@ public:
     return *this;
   }
   constexpr SharedPointer& operator=(SharedPointer&& val) noexcept {
-    if (&val != this) {
-      m__ptr = val.m_ptr;
-      val.m_ptr = nullptr;
-    }
+    reset();
+    m_ptr = val.m_ptr;
+    val.m_ptr = nullptr;
     return *this;
   }
   constexpr ~SharedPointer() noexcept { reset(); }
@@ -72,5 +75,10 @@ public:
     return *(m_ptr->value_address());
   }
 };
+
+template <typename T, typename... Args>
+constexpr SharedPointer<T> make_shared(Args&&... args) {
+  return SharedPointer<T>(new RefCountedValue<T>(std::forward<Args>(args)...));
+}
 
 } // namespace kl

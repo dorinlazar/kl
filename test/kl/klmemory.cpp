@@ -5,6 +5,20 @@ static const int CANARY_VALUE = -5555;
 static int object_count = 0;
 static int creation_count = 0;
 static int deletion_count = 0;
+static int deleter_count = 0;
+
+class KLMem : public testing::Test {
+public:
+  KLMem() {}
+
+protected:
+  void SetUp() override {
+    object_count = 0;
+    creation_count = 0;
+    deletion_count = 0;
+    deleter_count = 0;
+  }
+};
 
 class A {
 public:
@@ -23,8 +37,7 @@ public:
   int foo() { return CANARY_VALUE; }
 };
 
-TEST(klmem, simple_unique_pointer_tests) {
-  object_count = 0;
+TEST_F(KLMem, simple_unique_pointer_tests) {
   auto ptr = kl::make_ptr<A>();
   ASSERT_EQ(object_count, 1);
   ptr.reset();
@@ -59,8 +72,6 @@ TEST(klmem, simple_unique_pointer_tests) {
   EXPECT_THROW(ptr->foo(), kl::RuntimeError);
 }
 
-static int deleter_count = 0;
-
 template <typename T>
 class CustomDeleter {
 public:
@@ -71,11 +82,7 @@ public:
   }
 };
 
-TEST(klmem, test_unique_ptr_deleter_not_called_twice) {
-  deletion_count = 0;
-  object_count = 0;
-  creation_count = 0;
-  deleter_count = 0;
+TEST_F(KLMem, test_unique_ptr_deleter_not_called_twice) {
   {
     auto ptr = kl::UniquePtr<A, CustomDeleter<A>>(new A);
     ASSERT_EQ(deleter_count, 0);
@@ -89,10 +96,7 @@ TEST(klmem, test_unique_ptr_deleter_not_called_twice) {
   ASSERT_EQ(deleter_count, 2);
 }
 
-TEST(klmem, array_tests) {
-  deletion_count = 0;
-  object_count = 0;
-  creation_count = 0;
+TEST_F(KLMem, array_tests) {
   auto ptr = kl::make_array_ptr<A>(100);
   ASSERT_EQ(object_count, 100);
   ASSERT_NE(ptr.get(), nullptr);
@@ -146,10 +150,7 @@ TEST(klmem, array_tests) {
   }
 }
 
-TEST(klmem, test_pointer) {
-  deletion_count = 0;
-  object_count = 0;
-  creation_count = 0;
+TEST_F(KLMem, test_pointer) {
   {
     kl::Pointer<A> ptr(100);
     ASSERT_EQ(object_count, 100);
@@ -159,4 +160,60 @@ TEST(klmem, test_pointer) {
   }
   ASSERT_EQ(object_count, 99);
   ASSERT_EQ(deletion_count, 1);
+}
+
+template <typename T>
+size_t get_reference_count(T* ptr) {
+  return *reinterpret_cast<const size_t*>(reinterpret_cast<const uint8_t*>(ptr) - sizeof(size_t));
+}
+
+TEST_F(KLMem, test_ref_counted_pointer) {
+  {
+    auto ptr = kl::make_shared<A>(1);
+    ASSERT_EQ(object_count, 1);
+    ASSERT_EQ(creation_count, 1);
+    {
+      auto ptr_moved = ptr;
+      ASSERT_EQ(get_reference_count<A>(&(*ptr_moved)), 2);
+      auto ptr3(std::move(ptr_moved));
+      ASSERT_EQ(get_reference_count<A>(&(*ptr3)), 2);
+      auto ptr4 = ptr3;
+      ASSERT_EQ(get_reference_count<A>(&(*ptr4)), 3);
+      ASSERT_EQ(&(*ptr4), &(*ptr3));
+      ASSERT_EQ(&(*ptr4), &(*ptr));
+      ASSERT_EQ(deletion_count, 0);
+    }
+    ASSERT_EQ(deletion_count, 0);
+    ASSERT_EQ(get_reference_count<A>(&(*ptr)), 1);
+  }
+  ASSERT_EQ(deletion_count, 1);
+  ASSERT_EQ(object_count, 0);
+}
+
+TEST_F(KLMem, test_ref_counted_pointer_2) {
+  {
+    auto ptr = kl::make_shared<A>(1);
+    ASSERT_EQ(object_count, 1);
+    ASSERT_EQ(creation_count, 1);
+    {
+      kl::SharedPointer<A> ptr_moved = nullptr;
+      ptr_moved = ptr;
+      ASSERT_EQ(get_reference_count<A>(&(*ptr_moved)), 2);
+      kl::SharedPointer<A> ptr3 = nullptr;
+      EXPECT_THROW((*ptr3).foo(), kl::RuntimeError);
+      EXPECT_THROW(ptr3->foo(), kl::RuntimeError);
+      ptr3 = std::move(ptr_moved);
+      ASSERT_EQ(get_reference_count<A>(&(*ptr3)), 2);
+      auto ptr4 = ptr3;
+      ASSERT_EQ(get_reference_count<A>(&(*ptr4)), 3);
+      ASSERT_EQ(&(*ptr4), &(*ptr3));
+      ASSERT_EQ(&(*ptr4), &(*ptr));
+      ASSERT_EQ(deletion_count, 0);
+      ASSERT_EQ(ptr4->foo(), CANARY_VALUE);
+    }
+    ASSERT_EQ(deletion_count, 0);
+    ASSERT_EQ(get_reference_count<A>(&(*ptr)), 1);
+  }
+  ASSERT_EQ(deletion_count, 1);
+  ASSERT_EQ(object_count, 0);
 }
