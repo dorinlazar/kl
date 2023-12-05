@@ -169,7 +169,7 @@ size_t get_reference_count(T* ptr) {
 
 TEST_F(KLMem, test_ref_counted_pointer) {
   {
-    auto ptr = kl::make_shared<A>(1);
+    auto ptr = kl::make_mutable_shareable<A>(1);
     ASSERT_EQ(object_count, 1);
     ASSERT_EQ(creation_count, 1);
     {
@@ -192,14 +192,14 @@ TEST_F(KLMem, test_ref_counted_pointer) {
 
 TEST_F(KLMem, test_ref_counted_pointer_2) {
   {
-    auto ptr = kl::make_shared<A>(1);
+    auto ptr = kl::make_mutable_shareable<A>(1);
     ASSERT_EQ(object_count, 1);
     ASSERT_EQ(creation_count, 1);
     {
-      kl::SharedPointer<A> ptr_moved = nullptr;
+      kl::ShareableMutablePointer<A> ptr_moved = nullptr;
       ptr_moved = ptr;
       ASSERT_EQ(get_reference_count<A>(&(*ptr_moved)), 2);
-      kl::SharedPointer<A> ptr3 = nullptr;
+      kl::ShareableMutablePointer<A> ptr3 = nullptr;
       EXPECT_THROW((*ptr3).foo(), kl::RuntimeError);
       EXPECT_THROW(ptr3->foo(), kl::RuntimeError);
       ptr3 = std::move(ptr_moved);
@@ -216,4 +216,26 @@ TEST_F(KLMem, test_ref_counted_pointer_2) {
   }
   ASSERT_EQ(deletion_count, 1);
   ASSERT_EQ(object_count, 0);
+}
+
+TEST_F(KLMem, test_shareable_pointer_2) {
+  {
+    kl::ShareablePointer<A> ptr = kl::make_shareable<A>(100);
+    ASSERT_EQ(object_count, 100);
+    ASSERT_EQ(creation_count, 1);
+    {
+      kl::ShareablePointer<A> ptr2(ptr);
+      ASSERT_EQ(get_reference_count<A>(&(*ptr2)), 2);
+      kl::ShareablePointer<A> ptr3 = ptr2;
+      ASSERT_EQ(get_reference_count<A>(&(*ptr3)), 3);
+      ASSERT_EQ(&(*ptr3), &(*ptr2));
+      ASSERT_EQ(&(*ptr3), &(*ptr));
+      ASSERT_EQ(deletion_count, 0);
+      ASSERT_EQ(ptr3->foo(), CANARY_VALUE);
+    }
+    ASSERT_EQ(deletion_count, 0);
+    ASSERT_EQ(get_reference_count<A>(&(*ptr)), 1);
+  }
+  ASSERT_EQ(deletion_count, 1);
+  ASSERT_EQ(object_count, 99);
 }

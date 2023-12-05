@@ -19,23 +19,23 @@ struct RefCountedValue {
 };
 
 template <typename T, typename Deleter = DefaultDeleter<T>>
-class SharedPointer {
+class ShareableMutablePointer {
   RefCountedValue<T>* m_ptr;
 
 public:
-  constexpr SharedPointer(RefCountedValue<T>* ptr) : m_ptr(ptr) {
+  constexpr ShareableMutablePointer(RefCountedValue<T>* ptr) : m_ptr(ptr) {
     if (m_ptr) {
       m_ptr->add_new_ref();
     }
   }
 
-  constexpr SharedPointer(const SharedPointer& val) noexcept : m_ptr(val.m_ptr) {
+  constexpr ShareableMutablePointer(const ShareableMutablePointer& val) noexcept : m_ptr(val.m_ptr) {
     if (m_ptr) {
       m_ptr->add_new_ref();
     }
   }
-  constexpr SharedPointer(SharedPointer&& val) noexcept : m_ptr(val.m_ptr) { val.m_ptr = nullptr; }
-  constexpr SharedPointer& operator=(const SharedPointer& val) noexcept {
+  constexpr ShareableMutablePointer(ShareableMutablePointer&& val) noexcept : m_ptr(val.m_ptr) { val.m_ptr = nullptr; }
+  constexpr ShareableMutablePointer& operator=(const ShareableMutablePointer& val) noexcept {
     if (&val != this) {
       reset();
       m_ptr = val.m_ptr;
@@ -45,13 +45,13 @@ public:
     }
     return *this;
   }
-  constexpr SharedPointer& operator=(SharedPointer&& val) noexcept {
+  constexpr ShareableMutablePointer& operator=(ShareableMutablePointer&& val) noexcept {
     reset();
     m_ptr = val.m_ptr;
     val.m_ptr = nullptr;
     return *this;
   }
-  constexpr ~SharedPointer() noexcept { reset(); }
+  constexpr ~ShareableMutablePointer() noexcept { reset(); }
 
   constexpr void reset() noexcept {
     if (m_ptr) {
@@ -77,8 +77,35 @@ public:
 };
 
 template <typename T, typename... Args>
-constexpr SharedPointer<T> make_shared(Args&&... args) {
-  return SharedPointer<T>(new RefCountedValue<T>(std::forward<Args>(args)...));
+constexpr ShareableMutablePointer<T> make_mutable_shareable(Args&&... args) {
+  return ShareableMutablePointer<T>(new RefCountedValue<T>(std::forward<Args>(args)...));
+}
+
+template <typename T, typename Deleter = DefaultDeleter<T>>
+class ShareablePointer {
+  RefCountedValue<T>* m_ptr;
+
+public:
+  constexpr ShareablePointer(RefCountedValue<T>* ptr) : m_ptr(ptr) { m_ptr->add_new_ref(); }
+
+  constexpr ShareablePointer(const ShareablePointer& val) noexcept : m_ptr(val.m_ptr) { m_ptr->add_new_ref(); }
+  constexpr ShareablePointer(ShareablePointer&& val) = delete;
+  constexpr ShareablePointer& operator=(const ShareablePointer& val) = delete;
+  constexpr ShareablePointer& operator=(ShareablePointer&& val) = delete;
+  constexpr ~ShareablePointer() noexcept {
+    if (!m_ptr->remove_and_check_alive()) {
+      delete m_ptr;
+    }
+    m_ptr = nullptr;
+  }
+
+  constexpr T* operator->() const { return m_ptr->value_address(); }
+  constexpr T& operator*() const { return *(m_ptr->value_address()); }
+};
+
+template <typename T, typename... Args>
+constexpr ShareablePointer<T> make_shareable(Args&&... args) {
+  return ShareablePointer<T>(new RefCountedValue<T>(std::forward<Args>(args)...));
 }
 
 } // namespace kl

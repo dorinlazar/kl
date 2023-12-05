@@ -14,8 +14,8 @@ public:
   Pointer& operator=(const Pointer&) = delete;
   Pointer& operator=(Pointer&&) = delete;
   constexpr ~Pointer() { delete m_ptr; }
-  constexpr T* operator->() { return m_ptr; }
-  constexpr T& operator*() { return *m_ptr; }
+  constexpr T* operator->() const { return m_ptr; }
+  constexpr T& operator*() const { return *m_ptr; }
 };
 
 } // namespace kl
