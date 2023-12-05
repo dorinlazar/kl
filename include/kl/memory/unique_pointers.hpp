@@ -5,14 +5,14 @@
 namespace kl {
 
 template <typename T, class Deleter = DefaultDeleter<T>>
-class UniquePtr {
+class UniquePointer {
   T* m_ptr = nullptr;
 
 public:
-  constexpr UniquePtr(T* ptr = nullptr) : m_ptr(ptr) {}
-  constexpr UniquePtr(UniquePtr&& ptr) { m_ptr = ptr.release(); }
-  UniquePtr(const UniquePtr& ptr) = delete;
-  constexpr UniquePtr& operator=(UniquePtr&& ptr) {
+  constexpr UniquePointer(T* ptr = nullptr) : m_ptr(ptr) {}
+  constexpr UniquePointer(UniquePointer&& ptr) { m_ptr = ptr.release(); }
+  UniquePointer(const UniquePointer& ptr) = delete;
+  constexpr UniquePointer& operator=(UniquePointer&& ptr) {
     if (this != &ptr) {
       reset();
       m_ptr = ptr.m_ptr;
@@ -20,13 +20,13 @@ public:
     }
     return *this;
   }
-  UniquePtr& operator=(const UniquePtr& ptr) = delete;
-  constexpr UniquePtr& operator=(nullptr_t ptr) {
+  UniquePointer& operator=(const UniquePointer& ptr) = delete;
+  constexpr UniquePointer& operator=(nullptr_t ptr) {
     reset();
     return *this;
   }
 
-  constexpr ~UniquePtr() { reset(); }
+  constexpr ~UniquePointer() { reset(); }
 
   constexpr T* operator->() {
     if (m_ptr == nullptr) [[unlikely]] {
@@ -58,19 +58,19 @@ public:
 };
 
 template <typename T, class Deleter = DefaultMultiDeleter<T>>
-class UniqueArrayPtr {
+class UniqueArrayPointer {
   T* m_ptr = nullptr;
   size_t m_size = 0;
 
 public:
-  constexpr UniqueArrayPtr() noexcept = default;
-  constexpr UniqueArrayPtr(T* ptr, size_t size) : m_ptr(ptr), m_size(size) {}
-  constexpr UniqueArrayPtr(UniqueArrayPtr&& ptr) {
+  constexpr UniqueArrayPointer() noexcept = default;
+  constexpr UniqueArrayPointer(T* ptr, size_t size) : m_ptr(ptr), m_size(size) {}
+  constexpr UniqueArrayPointer(UniqueArrayPointer&& ptr) {
     m_size = ptr.m_size;
     m_ptr = ptr.release();
   }
-  UniqueArrayPtr(const UniqueArrayPtr& ptr) = delete;
-  constexpr UniqueArrayPtr& operator=(UniqueArrayPtr&& ptr) {
+  UniqueArrayPointer(const UniqueArrayPointer& ptr) = delete;
+  constexpr UniqueArrayPointer& operator=(UniqueArrayPointer&& ptr) {
     if (this != &ptr) {
       reset();
       m_size = ptr.m_size;
@@ -78,13 +78,13 @@ public:
     }
     return *this;
   }
-  UniqueArrayPtr& operator=(const UniqueArrayPtr& ptr) = delete;
-  constexpr UniqueArrayPtr& operator=(nullptr_t ptr) {
+  UniqueArrayPointer& operator=(const UniqueArrayPointer& ptr) = delete;
+  constexpr UniqueArrayPointer& operator=(nullptr_t ptr) {
     reset();
     return *this;
   }
 
-  constexpr ~UniqueArrayPtr() { reset(); }
+  constexpr ~UniqueArrayPointer() { reset(); }
 
   constexpr T& operator[](size_t index) {
     if (m_ptr == nullptr) [[unlikely]] {
@@ -115,13 +115,13 @@ public:
 };
 
 template <typename T, typename... Args>
-constexpr UniquePtr<T> make_ptr(Args&&... args) {
-  return UniquePtr<T>(new T(std::forward<Args>(args)...));
+constexpr UniquePointer<T> make_ptr(Args&&... args) {
+  return UniquePointer<T>(new T(std::forward<Args>(args)...));
 }
 
 template <typename T>
-constexpr UniqueArrayPtr<T> make_array_ptr(size_t size) {
-  return UniqueArrayPtr<T>(new T[size], size);
+constexpr UniqueArrayPointer<T> make_array_ptr(size_t size) {
+  return UniqueArrayPointer<T>(new T[size], size);
 }
 
 } // namespace kl
