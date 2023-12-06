@@ -242,12 +242,14 @@ TEST_F(KLMem, test_shareable_pointer_2) {
 
 TEST_F(KLMem, shared_array_tests) {
   kl::SharedArrayPointer<A> ptr(100);
-  auto ptr = kl::make_array_ptr<A>(100);
   ASSERT_EQ(object_count, 100);
   ASSERT_NE(ptr.get(), nullptr);
   ASSERT_EQ(ptr.size(), 100);
   ASSERT_THROW(ptr[100], kl::RuntimeError);
   ASSERT_NO_THROW(ptr[99]);
+  ASSERT_EQ(&ptr[99], &ptr[-1]);
+  ASSERT_EQ(&ptr[0], &ptr[-100]);
+  ASSERT_THROW(ptr[-101], kl::RuntimeError);
   ptr.reset();
   ASSERT_EQ(object_count, 0);
   ASSERT_EQ(ptr.get(), nullptr);
@@ -255,16 +257,16 @@ TEST_F(KLMem, shared_array_tests) {
   ASSERT_THROW(ptr[0], kl::RuntimeError);
   ASSERT_NO_THROW(ptr.reset());
   ASSERT_EQ(ptr.size(), 0);
-  ptr = kl::make_array_ptr<A>(30);
+  ptr = kl::SharedArrayPointer<A>(30);
   ASSERT_EQ(object_count, 30);
   ptr = nullptr;
   ASSERT_EQ(object_count, 0);
   ASSERT_NO_THROW(ptr.reset());
   ASSERT_EQ(object_count, 0);
   try {
-    ptr = kl::make_array_ptr<A>(30);
+    ptr = kl::SharedArrayPointer<A>(30);
     ASSERT_EQ(object_count, 30);
-    auto ptr2 = kl::make_array_ptr<A>(100);
+    auto ptr2 = kl::SharedArrayPointer<A>(100);
     ASSERT_EQ(object_count, 130);
     throw kl::RuntimeError("Hello");
   } catch (const kl::RuntimeError&) {
@@ -284,14 +286,27 @@ TEST_F(KLMem, shared_array_tests) {
     ASSERT_EQ(object_count, 100);
     ASSERT_EQ(deletion_count, 0);
     ASSERT_EQ(creation_count, 0);
+    kl::SharedArrayPointer<A> ptr4(ptr3);
+    ASSERT_EQ(object_count, 100);
+    ASSERT_EQ(deletion_count, 0);
+    ASSERT_EQ(creation_count, 0);
+    ASSERT_NO_THROW(ptr4[99].foo());
+    ASSERT_THROW(ptr4[100].foo(), kl::RuntimeError);
     ptr = ptr3;
   }
   ASSERT_EQ(object_count, 100);
   ptr = nullptr;
+  kl::SharedArrayPointer<A> ptr_ext(0);
   {
     kl::SharedArrayPointer<A> ptr3(std::move(ptr));
     ASSERT_EQ(object_count, 0);
     ASSERT_EQ(ptr3.get(), nullptr);
     ASSERT_EQ(ptr3.size(), 0);
+    for (int i = 0; i <= 100; i++) {
+      // use this trick because otherwise it will be constexpr-optimized and not covered by test.
+      kl::SharedArrayPointer<A> ptr2(i - 100);
+      ASSERT_EQ(ptr2.get(), nullptr);
+      ASSERT_EQ(ptr2.size(), 0);
+    }
   }
 }
