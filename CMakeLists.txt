@@ -13,7 +13,7 @@ if(COVERAGE_ENABLED)
   set(CMAKE_CXX_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
 endif(COVERAGE_ENABLED)
 
-set(LIBRARY_SOURCES src/klexcept.cpp)
+set(LIBRARY_SOURCES src/except.cpp)
 
 set(LIBRARY_HEADERS
     include/kl/memory/deleters.hpp include/kl/memory/unique_pointers.hpp
