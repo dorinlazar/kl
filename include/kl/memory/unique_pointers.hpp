@@ -1,5 +1,5 @@
 #pragma once
-#include <kl/klexcept.hpp>
+#include <kl/except.hpp>
 #include <kl/memory/deleters.hpp>
 
 namespace kl {

@@ -16,20 +16,17 @@ endif(COVERAGE_ENABLED)
 set(LIBRARY_SOURCES src/klexcept.cpp)
 
 set(LIBRARY_HEADERS
-    include/kl/memory/deleters.hpp
-    include/kl/memory/unique_pointers.hpp
-    include/kl/memory/ref_counted_pointer.hpp
-    include/kl/klexcept.hpp
+    include/kl/memory/deleters.hpp include/kl/memory/unique_pointers.hpp
+    include/kl/memory/ref_counted_pointer.hpp include/kl/except.hpp
     include/kl/memory.hpp)
 
 add_library(kl ${LIBRARY_SOURCES} ${LIBRARY_HEADERS})
 
 target_include_directories(
-  kl
-  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/kl>
-          $<INSTALL_INTERFACE:include/kl>)
+  kl PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/kl>
+             $<INSTALL_INTERFACE:include/kl>)
 target_include_directories(
   kl PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                         $<INSTALL_INTERFACE:include>)
+            $<INSTALL_INTERFACE:include>)
 
 add_subdirectory(test)
