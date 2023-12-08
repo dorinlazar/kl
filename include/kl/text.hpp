@@ -3,7 +3,7 @@
 
 namespace kl {
 
-constexpr int32_t REF_COUNTED_GUARD = 0xDEAD7C27;
+constexpr int32_t RefCountedGuard{static_cast<int32_t>(0xDEAD7C27)};
 
 struct TextRefCountedBase {
   int32_t size = 0;
@@ -11,14 +11,21 @@ struct TextRefCountedBase {
 
   constexpr TextRefCountedBase() {
     if consteval {
-      refcount = REF_COUNTED_GUARD;
+      refcount = RefCountedGuard;
     }
   }
 
-  constexpr void add_ref() { refcount++; }
+  constexpr void add_ref() {
+    if (refcount != RefCountedGuard) {
+      refcount++;
+    }
+  }
   constexpr bool remove_ref_and_test() {
-    refcount--;
-    return refcount > 0;
+    if (refcount != RefCountedGuard) {
+      refcount--;
+      return refcount > 0;
+    }
+    return true;
   }
 };
 
