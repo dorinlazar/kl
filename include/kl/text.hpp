@@ -29,10 +29,20 @@ struct TextRefCountedBase {
   }
 };
 
-template <int size>
+template <uint32_t Size>
 struct TextRefCounted {
   TextRefCountedBase base;
-  char data[size];
+  char data[Size];
+  static_assert(Size > 0, "The size of a literal should be >0");
+  constexpr TextRefCounted(const char literal[Size]) {
+    base.size = Size - 1;
+    if (literal[Size - 1]) {
+      base.size++;
+    }
+    for (uint32_t i = 0; i < Size; i++) {
+      data[i] = literal[i];
+    }
+  }
 };
 
 class Text {
@@ -49,11 +59,8 @@ public:
   Text& operator=(Text&& dying) noexcept;
 
   Text(char c);
-  Text(const std::string& s);
   Text(const char* ptr);
   Text(const char* ptr, size_t size);
-  Text(const Text& t, size_t start, size_t length);
-  Text(TextRefCounter* buffer, size_t length);
 };
 
 } // namespace kl
