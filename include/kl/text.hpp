@@ -50,6 +50,8 @@ class Text {
   size_t m_start = 0;
   size_t m_end = 0;
 
+  friend constexpr Text operator""_t(const char*, size_t);
+
 public:
   Text();
   ~Text();
@@ -62,5 +64,10 @@ public:
   Text(const char* ptr);
   Text(const char* ptr, size_t size);
 };
+
+template <size_t Size>
+constexpr TextRefCounted<Size> operator""_t(const char* ptr, size_t size) {
+  return TextRefCounted<Size>(ptr);
+}
 
 } // namespace kl
