@@ -5,9 +5,10 @@ using namespace kl;
 TEST(klbasictext, textref) {
   constexpr TextRefCountedBase a;
   EXPECT_EQ(a.refcount, RefCountedGuard);
-  a.add_ref();
-  EXPECT_EQ(a.refcount, RefCountedGuard);
-  TextRefCountedBase b;
-  b.size = 10;
-  EXPECT_EQ(b.refcount, 0);
+  auto item = "Hello world"_tr;
+  EXPECT_EQ(item->refcount, RefCountedGuard);
+  item->add_ref();
+  EXPECT_EQ(item->refcount, RefCountedGuard);
+  EXPECT_FALSE(item->remove_ref_and_test());
+  EXPECT_EQ(item->refcount, RefCountedGuard);
 }

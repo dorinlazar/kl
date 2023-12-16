@@ -25,7 +25,7 @@ struct TextRefCountedBase {
       refcount--;
       return refcount > 0;
     }
-    return true;
+    return false;
   }
 };
 
@@ -34,7 +34,7 @@ struct TextRefCounted {
   TextRefCountedBase base;
   char data[Size];
   static_assert(Size > 0, "The size of a literal should be >0");
-  constexpr TextRefCounted(const char literal[Size]) {
+  constexpr TextRefCounted(const char (&literal)[Size]) {
     base.size = Size - 1;
     if (literal[Size - 1]) {
       base.size++;
@@ -47,10 +47,8 @@ struct TextRefCounted {
 
 class Text {
   TextRefCountedBase* m_memblock;
-  size_t m_start = 0;
-  size_t m_end = 0;
-
-  friend constexpr Text operator""_t(const char*, size_t);
+  int32_t m_start = 0;
+  int32_t m_end = 0;
 
 public:
   Text();
@@ -63,11 +61,17 @@ public:
   Text(char c);
   Text(const char* ptr);
   Text(const char* ptr, size_t size);
+  constexpr Text(TextRefCountedBase* ptr) : m_memblock(ptr), m_start(0), m_end(m_memblock->size) {}
 };
 
-template <size_t Size>
-constexpr TextRefCounted<Size> operator""_t(const char* ptr, size_t size) {
-  return TextRefCounted<Size>(ptr);
+template <TextRefCounted Item>
+constexpr TextRefCountedBase* operator""_tr() {
+  return const_cast<TextRefCountedBase*>(&Item.base);
+}
+
+template <TextRefCounted Item>
+constexpr Text operator""_t() {
+  return Text(const_cast<TextRefCountedBase*>(&Item.base));
 }
 
 } // namespace kl
