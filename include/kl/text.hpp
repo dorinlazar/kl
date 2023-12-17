@@ -23,18 +23,22 @@ struct TextRefCountedBase {
   constexpr bool remove_ref_and_test() {
     if (refcount != RefCountedGuard) {
       refcount--;
-      return refcount > 0;
+      return refcount <= 0;
     }
     return false;
+  }
+  constexpr char* text_address() const {
+    return reinterpret_cast<char*>(const_cast<TextRefCountedBase*>(this)) + sizeof(*this);
   }
 };
 
 template <uint32_t Size>
-struct TextRefCounted {
+struct TextLiteral {
   TextRefCountedBase base;
   char data[Size];
   static_assert(Size > 0, "The size of a literal should be >0");
-  constexpr TextRefCounted(const char (&literal)[Size]) {
+
+  constexpr TextLiteral(const char (&literal)[Size]) {
     base.size = Size - 1;
     if (literal[Size - 1]) {
       base.size++;
@@ -45,14 +49,26 @@ struct TextRefCounted {
   }
 };
 
+template <TextLiteral Item>
+constexpr TextRefCountedBase* operator""_tr() {
+  return const_cast<TextRefCountedBase*>(&Item.base);
+}
+
 class Text {
-  TextRefCountedBase* m_memblock;
+  char* m_text_buffer;
   int32_t m_start = 0;
   int32_t m_end = 0;
 
 public:
-  Text();
-  ~Text();
+  constexpr Text() : Text(""_tr) {}
+  constexpr ~Text() {
+    TextRefCountedBase* ptr = reinterpret_cast<TextRefCountedBase*>(m_text_buffer - sizeof(TextRefCountedBase));
+    if (ptr->remove_ref_and_test()) {
+      delete ptr;
+    }
+    m_start = 0;
+    m_end = 0;
+  }
   Text(const Text& value);
   Text(Text&& dying) noexcept;
   Text& operator=(const Text& value);
@@ -61,15 +77,10 @@ public:
   Text(char c);
   Text(const char* ptr);
   Text(const char* ptr, size_t size);
-  constexpr Text(TextRefCountedBase* ptr) : m_memblock(ptr), m_start(0), m_end(m_memblock->size) {}
+  constexpr Text(TextRefCountedBase* ptr) : m_text_buffer(ptr->text_address()), m_start(0), m_end(ptr->size) {}
 };
 
-template <TextRefCounted Item>
-constexpr TextRefCountedBase* operator""_tr() {
-  return const_cast<TextRefCountedBase*>(&Item.base);
-}
-
-template <TextRefCounted Item>
+template <TextLiteral Item>
 constexpr Text operator""_t() {
   return Text(const_cast<TextRefCountedBase*>(&Item.base));
 }
