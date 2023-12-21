@@ -55,19 +55,26 @@ constexpr TextRefCountedBase* operator""_tr() {
 }
 
 class Text {
-  char* m_text_buffer;
+  char* m_text_buffer = nullptr;
   int32_t m_start = 0;
   int32_t m_end = 0;
+
+  constexpr TextRefCountedBase* Base() {
+    return reinterpret_cast<TextRefCountedBase*>(m_text_buffer - sizeof(TextRefCountedBase));
+  }
 
 public:
   constexpr Text() : Text(""_tr) {}
   constexpr ~Text() {
-    TextRefCountedBase* ptr = reinterpret_cast<TextRefCountedBase*>(m_text_buffer - sizeof(TextRefCountedBase));
-    if (ptr->remove_ref_and_test()) {
-      delete ptr;
+    if (m_text_buffer) {
+      auto ptr = Base();
+      if (ptr->remove_ref_and_test()) {
+        delete ptr;
+      }
+      ptr = nullptr;
+      m_start = 0;
+      m_end = 0;
     }
-    m_start = 0;
-    m_end = 0;
   }
   Text(const Text& value);
   Text(Text&& dying) noexcept;
@@ -76,7 +83,7 @@ public:
 
   Text(char c);
   Text(const char* ptr);
-  Text(const char* ptr, size_t size);
+  Text(const char* ptr, int32_t size);
   constexpr Text(TextRefCountedBase* ptr) : m_text_buffer(ptr->text_address()), m_start(0), m_end(ptr->size) {}
 };
 
