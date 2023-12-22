@@ -24,18 +24,18 @@ struct RefCountedValue {
 
 template <typename T, typename Deleter = DefaultDeleter<T>>
 class ShareableMutablePointer {
-  RefCountedValue<T>* m_ptr;
+  T* m_ptr;
 
 public:
-  constexpr ShareableMutablePointer(RefCountedValue<T>* ptr) : m_ptr(ptr) {
-    if (m_ptr) {
-      m_ptr->add_new_ref();
+  constexpr ShareableMutablePointer(RefCountedValue<T>* ptr) : m_ptr(ptr != nullptr ? ptr->value_address() : nullptr) {
+    if (ptr) {
+      ptr->add_new_ref();
     }
   }
 
   constexpr ShareableMutablePointer(const ShareableMutablePointer& val) noexcept : m_ptr(val.m_ptr) {
     if (m_ptr) {
-      m_ptr->add_new_ref();
+      RefCountedValue<T>::from_pointer(m_ptr)->add_new_ref();
     }
   }
   constexpr ShareableMutablePointer(ShareableMutablePointer&& val) noexcept : m_ptr(val.m_ptr) { val.m_ptr = nullptr; }
@@ -44,7 +44,7 @@ public:
       reset();
       m_ptr = val.m_ptr;
       if (m_ptr) {
-        m_ptr->add_new_ref();
+        RefCountedValue<T>::from_pointer(m_ptr)->add_new_ref();
       }
     }
     return *this;
@@ -59,8 +59,9 @@ public:
 
   constexpr void reset() noexcept {
     if (m_ptr) {
-      if (!m_ptr->remove_and_check_alive()) {
-        delete m_ptr;
+      auto ref_counted = RefCountedValue<T>::from_pointer(m_ptr);
+      if (!ref_counted->remove_and_check_alive()) {
+        delete ref_counted;
       }
       m_ptr = nullptr;
     }
@@ -70,13 +71,13 @@ public:
     if (m_ptr == nullptr) [[unlikely]] {
       throw RuntimeError("Null reference");
     }
-    return m_ptr->value_address();
+    return m_ptr;
   }
   constexpr T& operator*() {
     if (m_ptr == nullptr) [[unlikely]] {
       throw RuntimeError("Null reference");
     }
-    return *(m_ptr->value_address());
+    return *m_ptr;
   }
 };
 
