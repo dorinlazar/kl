@@ -1,13 +1,13 @@
 #pragma once
-#include <cstdint>
+#include <kl/inttypes.hpp>
 
 namespace kl {
 
-constexpr int32_t RefCountedGuard{static_cast<int32_t>(0xDEAD7C27)};
+constexpr TSize RefCountedGuard{static_cast<TSize>(0xDEAD7C27)};
 
 struct TextRefCountedBase {
-  int32_t size = 0;
-  int32_t refcount = 0;
+  TSize size = 0;
+  TSize refcount = 1;
 
   constexpr TextRefCountedBase() {
     if consteval {
@@ -30,9 +30,11 @@ struct TextRefCountedBase {
   constexpr char* text_address() const {
     return reinterpret_cast<char*>(const_cast<TextRefCountedBase*>(this)) + sizeof(*this);
   }
+
+  static TextRefCountedBase* allocate(TSize payload_size);
 };
 
-template <uint32_t Size>
+template <TSize Size>
 struct TextLiteral {
   TextRefCountedBase base;
   char data[Size];
@@ -43,7 +45,7 @@ struct TextLiteral {
     if (literal[Size - 1]) {
       base.size++;
     }
-    for (uint32_t i = 0; i < Size; i++) {
+    for (TSize i = 0; i < Size; i++) {
       data[i] = literal[i];
     }
   }
@@ -56,8 +58,8 @@ constexpr TextRefCountedBase* operator""_tr() {
 
 class Text {
   char* m_text_buffer = nullptr;
-  int32_t m_start = 0;
-  int32_t m_end = 0;
+  TSize m_start = 0;
+  TSize m_end = 0;
 
   constexpr TextRefCountedBase* Base() {
     return reinterpret_cast<TextRefCountedBase*>(m_text_buffer - sizeof(TextRefCountedBase));
@@ -83,7 +85,7 @@ public:
 
   Text(char c);
   Text(const char* ptr);
-  Text(const char* ptr, int32_t size);
+  Text(const char* ptr, TSize size);
   constexpr Text(TextRefCountedBase* ptr) : m_text_buffer(ptr->text_address()), m_start(0), m_end(ptr->size) {}
 };
 

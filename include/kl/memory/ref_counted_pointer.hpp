@@ -1,12 +1,12 @@
 #pragma once
 #include <kl/memory/deleters.hpp>
-#include <stdint.h>
+#include <kl/inttypes.hpp>
 
 namespace kl {
 
 template <typename T>
 struct RefCountedValue {
-  int64_t reference_count = 0;
+  TSize reference_count = 0;
   T value;
 
   template <typename... Args>
@@ -15,7 +15,10 @@ struct RefCountedValue {
   constexpr void add_new_ref() noexcept { reference_count++; }
   constexpr bool remove_and_check_alive() noexcept {
     reference_count--;
-    return reference_count > 0; // maybe this could be optimized by have a size_t and checking against 0;
+    return reference_count > 0;
+  }
+  static constexpr RefCountedValue<T>* from_pointer(T* ptr) noexcept {
+    return reinterpret_cast<RefCountedValue<T>*>(reinterpret_cast<TByte*>(ptr) - sizeof(TSize));
   }
 };
 
@@ -134,7 +137,7 @@ public:
   constexpr SharedArrayPointer(int64_t size, InitializationType init_type = InitializationType::Constructor)
       : m_size(size) {
     if (size > 0) {
-      m_ptr = reinterpret_cast<RefCountedBase*>(malloc(sizeof(RefCountedBase) + m_size * sizeof(T)));
+      m_ptr = reinterpret_cast<RefCountedBase*>(new TByte[sizeof(RefCountedBase) + m_size * sizeof(T)]);
       if (init_type == InitializationType::Constructor) {
         for (int i = 0; i < m_size; i++) {
           new (m_ptr->start_address<T>() + i) T();
@@ -188,7 +191,7 @@ public:
         for (int64_t i = 0; i < m_size; i++) {
           (m_ptr->start_address<T>() + i)->~T();
         }
-        free(m_ptr);
+        delete[] (reinterpret_cast<TByte*>(m_ptr));
       }
       m_ptr = nullptr;
       m_size = 0;

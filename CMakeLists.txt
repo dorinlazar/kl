@@ -16,8 +16,12 @@ endif(COVERAGE_ENABLED)
 set(LIBRARY_SOURCES src/except.cpp src/text.cpp)
 
 set(LIBRARY_HEADERS
-    include/kl/memory/deleters.hpp include/kl/memory/unique_pointers.hpp
-    include/kl/memory/ref_counted_pointer.hpp include/kl/except.hpp
+    include/kl/text.hpp
+    include/kl/inttypes.hpp
+    include/kl/memory/deleters.hpp
+    include/kl/memory/unique_pointers.hpp
+    include/kl/memory/ref_counted_pointer.hpp
+    include/kl/except.hpp
     include/kl/memory.hpp)
 
 add_library(kl ${LIBRARY_SOURCES} ${LIBRARY_HEADERS})

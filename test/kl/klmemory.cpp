@@ -163,8 +163,8 @@ TEST_F(KLMem, test_pointer) {
 }
 
 template <typename T>
-size_t get_reference_count(T* ptr) {
-  return *reinterpret_cast<const size_t*>(reinterpret_cast<const uint8_t*>(ptr) - sizeof(size_t));
+auto get_reference_count(T* ptr) {
+  return kl::RefCountedValue<T>::from_pointer(ptr)->reference_count;
 }
 
 TEST_F(KLMem, test_ref_counted_pointer) {
