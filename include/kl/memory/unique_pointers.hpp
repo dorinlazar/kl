@@ -1,16 +1,26 @@
 #pragma once
+
+#include <cstddef>
 #include <kl/except.hpp>
 #include <kl/memory/deleters.hpp>
 
 namespace kl {
 
+/**
+ * @brief A smart pointer that owns and manages the lifetime of an object through a pointer.
+ *
+ * The UniquePointer class provides a way to manage dynamically allocated objects with automatic
+ * deallocation when the UniquePointer goes out of scope.
+ *
+ * @tparam T The type of the object being managed.
+ */
 template <typename T, class Deleter = DefaultDeleter<T>>
 class UniquePointer {
   T* m_ptr = nullptr;
 
 public:
-  constexpr UniquePointer(T* ptr = nullptr) : m_ptr(ptr) {}
-  constexpr UniquePointer(UniquePointer&& ptr) { m_ptr = ptr.release(); }
+  constexpr UniquePointer(T* ptr = nullptr) noexcept : m_ptr(ptr) {}
+  constexpr UniquePointer(UniquePointer&& ptr) noexcept { m_ptr = ptr.release(); }
   UniquePointer(const UniquePointer& ptr) = delete;
   constexpr UniquePointer& operator=(UniquePointer&& ptr) {
     if (this != &ptr) {
@@ -26,7 +36,7 @@ public:
     return *this;
   }
 
-  constexpr ~UniquePointer() { reset(); }
+  constexpr ~UniquePointer() noexcept { reset(); }
 
   constexpr T* operator->() {
     if (m_ptr == nullptr) [[unlikely]] {
@@ -49,7 +59,7 @@ public:
     return ptr;
   }
 
-  constexpr void reset() {
+  constexpr void reset() noexcept {
     if (m_ptr != nullptr) [[likely]] {
       Deleter()(m_ptr);
       m_ptr = nullptr;
