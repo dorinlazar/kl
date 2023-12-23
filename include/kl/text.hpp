@@ -31,7 +31,25 @@ struct TextRefCountedBase {
     return reinterpret_cast<char*>(const_cast<TextRefCountedBase*>(this)) + sizeof(*this);
   }
 
-  static TextRefCountedBase* allocate(TSize payload_size);
+  static constexpr TextRefCountedBase* from_text_address(char* ptr) {
+    return reinterpret_cast<TextRefCountedBase*>(ptr - sizeof(TextRefCountedBase));
+  }
+  static constexpr TextRefCountedBase* allocate(TSize payload_size) {
+    if (payload_size < 0) {
+      payload_size = 0;
+    }
+    auto ptr = new char[sizeof(TextRefCountedBase) + payload_size];
+    auto base = reinterpret_cast<TextRefCountedBase*>(ptr);
+    base->size = payload_size;
+    base->refcount = 1;
+    return base;
+  }
+
+  static constexpr void deallocate(TextRefCountedBase* ptr) {
+    if (ptr->refcount != RefCountedGuard) {
+      delete[] reinterpret_cast<char*>(ptr);
+    }
+  }
 };
 
 template <TSize Size>
@@ -61,7 +79,7 @@ class Text {
   TSize m_start = 0;
   TSize m_end = 0;
 
-  constexpr TextRefCountedBase* Base() {
+  constexpr TextRefCountedBase* base() {
     return reinterpret_cast<TextRefCountedBase*>(m_text_buffer - sizeof(TextRefCountedBase));
   }
 
@@ -69,9 +87,9 @@ public:
   constexpr Text() : Text(""_tr) {}
   constexpr ~Text() {
     if (m_text_buffer) {
-      auto ptr = Base();
+      auto ptr = base();
       if (ptr->remove_ref_and_test()) {
-        delete ptr;
+        TextRefCountedBase::deallocate(ptr);
       }
       ptr = nullptr;
       m_start = 0;
@@ -85,8 +103,11 @@ public:
 
   Text(char c);
   Text(const char* ptr);
+  constexpr Text(std::nullptr_t) : Text() {}
   Text(const char* ptr, TSize size);
   constexpr Text(TextRefCountedBase* ptr) : m_text_buffer(ptr->text_address()), m_start(0), m_end(ptr->size) {}
+
+  constexpr TSize size() { return m_end - m_start; }
 };
 
 template <TextLiteral Item>
