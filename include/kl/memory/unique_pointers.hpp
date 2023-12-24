@@ -1,8 +1,9 @@
 #pragma once
 
-#include <cstddef>
 #include <kl/except.hpp>
 #include <kl/memory/deleters.hpp>
+#include <kl/inttypes.hpp>
+#include <kl/klbase.hpp>
 
 namespace kl {
 
@@ -70,11 +71,11 @@ public:
 template <typename T, class Deleter = DefaultMultiDeleter<T>>
 class UniqueArrayPointer {
   T* m_ptr = nullptr;
-  size_t m_size = 0;
+  TSize m_size = 0;
 
 public:
   constexpr UniqueArrayPointer() noexcept = default;
-  constexpr UniqueArrayPointer(T* ptr, size_t size) : m_ptr(ptr), m_size(size) {}
+  constexpr UniqueArrayPointer(T* ptr, TSize size) : m_ptr(ptr), m_size(kl::max(size, 0)) {}
   constexpr UniqueArrayPointer(UniqueArrayPointer&& ptr) {
     m_size = ptr.m_size;
     m_ptr = ptr.release();
@@ -96,14 +97,23 @@ public:
 
   constexpr ~UniqueArrayPointer() { reset(); }
 
-  constexpr T& operator[](size_t index) {
+  /**
+   * @brief Accesses the element at the specified index.
+   *
+   * @param index The index of the element to access. If negative, it's considered reverse offset from the end.
+   * @return A reference to the element at the specified index.
+   */
+  constexpr T& operator[](TSize index) {
     if (m_ptr == nullptr) [[unlikely]] {
       throw RuntimeError("Null reference");
     }
-    if (index >= m_size) [[unlikely]] {
+    if (index < 0) {
+      index += m_size;
+    }
+    if (index >= m_size || index < 0) [[unlikely]] {
       throw RuntimeError("Out of range");
     }
-    return *m_ptr;
+    return m_ptr[index];
   }
 
   constexpr T* get() const { return m_ptr; }

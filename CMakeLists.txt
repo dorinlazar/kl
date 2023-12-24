@@ -17,7 +17,9 @@ set(LIBRARY_SOURCES src/except.cpp src/text.cpp)
 
 set(LIBRARY_HEADERS
     include/kl/flow.hpp
+    include/kl/klbase.hpp
     include/kl/ds/array.hpp
+    include/kl/ds/tags.hpp
     include/kl/text.hpp
     include/kl/inttypes.hpp
     include/kl/memory/deleters.hpp
@@ -28,9 +30,6 @@ set(LIBRARY_HEADERS
 
 add_library(kl ${LIBRARY_SOURCES} ${LIBRARY_HEADERS})
 
-target_include_directories(
-  kl PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/kl>
-             $<INSTALL_INTERFACE:include/kl>)
 target_include_directories(
   kl PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>)
