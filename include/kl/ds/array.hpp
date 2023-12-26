@@ -25,10 +25,24 @@ class Array {
   }
 
   constexpr void release_data() {
-    for (TSize i = 0; i < m_size; ++i) {
+    for (TSize i = 0; i < m_size; i++) {
       m_data[i].~T();
     }
     ::operator delete(m_data);
+  }
+
+  constexpr void allocate_space_for_next(int count = 1) {
+    if (count < 1) {
+      return;
+    }
+    if (TSIZE_MAX - count < m_size) [[unlikely]] {
+      throw RuntimeError("Out of range");
+    }
+    if (m_size + count > m_reserved) {
+      auto required = std::max((m_size + count) - m_reserved, 8);
+      auto new_items_size = m_reserved + std::max(m_reserved, required);
+      reserve(new_items_size);
+    }
   }
 
 public:
@@ -36,7 +50,7 @@ public:
   template <typename... Args>
   constexpr Array(TagBuild, TSize size, Args&&... args)
       : m_data(static_cast<T*>(::operator new(size * sizeof(T)))), m_size(size), m_reserved(size) {
-    for (TSize i = 0; i < m_size; ++i) {
+    for (TSize i = 0; i < m_size; i++) {
       new (m_data + i) T(std::forward<Args>(args)...);
     }
   }
@@ -61,10 +75,7 @@ public:
   }
 
   constexpr T& push_back(const T& value) {
-    if (m_size == m_reserved) {
-      auto new_items_size = m_reserved + kl::min(kl::max(m_reserved * 2, 8), 128);
-      reserve(new_items_size);
-    }
+    allocate_space_for_next();
     new (m_data + m_size) T(value);
     ++m_size;
     return m_data[m_size - 1];
@@ -72,10 +83,7 @@ public:
 
   template <typename... Args>
   constexpr T& emplace_back(Args&&... args) {
-    if (m_size == m_reserved) {
-      auto new_items_size = m_reserved + kl::min(kl::max(m_reserved * 2, 8), 128);
-      reserve(new_items_size);
-    }
+    allocate_space_for_next();
     new (m_data + m_size) T(std::forward(args)...);
     ++m_size;
     return m_data[m_size - 1];
@@ -84,7 +92,7 @@ public:
   constexpr void reserve(TSize size) {
     if (size > m_reserved) {
       auto new_data = static_cast<T*>(::operator new(size * sizeof(T)));
-      for (TSize i = 0; i < m_size; ++i) {
+      for (TSize i = 0; i < m_size; i++) {
         new (new_data + i) T(std::move(m_data[i]));
       }
       release_data();
