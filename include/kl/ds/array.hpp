@@ -3,6 +3,8 @@
 #include <kl/ds/tags.hpp>
 #include <kl/except.hpp>
 #include <kl/klbase.hpp>
+#include <utility>
+#include <initializer_list>
 
 namespace kl {
 
@@ -43,6 +45,14 @@ public:
   constexpr Array(TagReserve, TSize size)
       : m_data(static_cast<T*>(::operator new(size * sizeof(T)))), m_size(0), m_reserved(size) {}
 
+  constexpr Array(std::initializer_list<T> list) : Array(TagNoInit{}, list.size()) {
+    TSize i = 0;
+    for (const auto& item: list) {
+      new (m_data + i) T(item);
+      i++;
+    }
+  }
+
   constexpr ~Array() {
     release_data();
     m_data = nullptr;
@@ -50,23 +60,25 @@ public:
     m_reserved = 0;
   }
 
-  constexpr const auto& operator[](TSize index) const { return m_data[get_index(index)]; }
-  constexpr auto& operator[](TSize index) { return m_data[get_index(index)]; }
-
-  constexpr TSize size() const { return m_size; }
-  constexpr TSize reserved() const { return m_reserved; }
-  constexpr T* data() const { return m_data; }
-
-  constexpr T* begin() const { return m_data; }
-  constexpr T* end() const { return m_data + m_size; }
-
-  constexpr void push_back(const T& value) {
+  constexpr T& push_back(const T& value) {
     if (m_size == m_reserved) {
       auto new_items_size = m_reserved + kl::min(kl::max(m_reserved * 2, 8), 128);
       reserve(new_items_size);
     }
     new (m_data + m_size) T(value);
     ++m_size;
+    return m_data[m_size - 1];
+  }
+
+  template <typename... Args>
+  constexpr T& emplace_back(Args&&... args) {
+    if (m_size == m_reserved) {
+      auto new_items_size = m_reserved + kl::min(kl::max(m_reserved * 2, 8), 128);
+      reserve(new_items_size);
+    }
+    new (m_data + m_size) T(std::forward(args)...);
+    ++m_size;
+    return m_data[m_size - 1];
   }
 
   constexpr void reserve(TSize size) {
@@ -80,6 +92,16 @@ public:
       m_reserved = size;
     }
   }
+
+  constexpr const auto& operator[](TSize index) const { return m_data[get_index(index)]; }
+  constexpr auto& operator[](TSize index) { return m_data[get_index(index)]; }
+
+  constexpr TSize size() const { return m_size; }
+  constexpr TSize reserved() const { return m_reserved; }
+  constexpr T* data() const { return m_data; }
+
+  constexpr T* begin() const { return m_data; }
+  constexpr T* end() const { return m_data + m_size; }
 };
 
 } // namespace kl

@@ -15,4 +15,8 @@ TEST(klarray, construction) {
   Array<int> d(TagReserve{}, 10);
   EXPECT_EQ(d.size(), 0);
   EXPECT_EQ(d.reserved(), 10);
+  Array<int> e{1, 2, 3, 4, 5};
+  EXPECT_EQ(e.size(), 5);
+  EXPECT_EQ(e.reserved(), 5);
+  EXPECT_EQ(e[3], 4);
 }
