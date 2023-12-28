@@ -19,6 +19,7 @@ set(LIBRARY_HEADERS
     include/kl/flow.hpp
     include/kl/klbase.hpp
     include/kl/ds/array.hpp
+    include/kl/ds/cursor.hpp
     include/kl/ds/tags.hpp
     include/kl/text.hpp
     include/kl/inttypes.hpp
@@ -29,6 +30,9 @@ set(LIBRARY_HEADERS
     include/kl/memory.hpp)
 
 add_library(kl ${LIBRARY_SOURCES} ${LIBRARY_HEADERS})
+
+include_directories(SYSTEM
+                    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
 target_include_directories(
   kl PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

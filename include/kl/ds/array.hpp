@@ -6,6 +6,8 @@
 #include <utility>
 #include <initializer_list>
 
+#include <kl/ds/cursor.hpp>
+
 namespace kl {
 
 template <typename T>
@@ -14,10 +16,14 @@ class Array {
   TSize m_size;
   TSize m_reserved;
 
-  constexpr TSize get_index(TSize index) const {
+  constexpr TSize flex_index(TSize index) const {
     if (index < 0) {
       index += m_size;
     }
+    return strict_index(index);
+  }
+
+  constexpr TSize strict_index(TSize index) const {
     if (index >= m_size || index < 0) [[unlikely]] {
       throw RuntimeError("Out of range");
     }
@@ -101,15 +107,21 @@ public:
     }
   }
 
-  constexpr const auto& operator[](TSize index) const { return m_data[get_index(index)]; }
-  constexpr auto& operator[](TSize index) { return m_data[get_index(index)]; }
+  constexpr T* begin() const { return m_data; }
+  constexpr T* end() const { return m_data + m_size; }
+
+  constexpr Cursor first() const { return {0}; }
+  constexpr Cursor last() const { return {m_size - 1}; }
+  constexpr bool valid(Cursor cur) const { return cur.position() >= 0 && cur.position() < m_size; }
+
+  constexpr const T& operator[](TSize index) const { return m_data[flex_index(index)]; }
+  constexpr T& operator[](TSize index) { return m_data[flex_index(index)]; }
+  constexpr const T& operator[](Cursor index) const { return m_data[strict_index(index.position())]; }
+  constexpr T& operator[](Cursor index) { return m_data[strict_index(index.position())]; }
 
   constexpr TSize size() const { return m_size; }
   constexpr TSize reserved() const { return m_reserved; }
   constexpr T* data() const { return m_data; }
-
-  constexpr T* begin() const { return m_data; }
-  constexpr T* end() const { return m_data + m_size; }
 };
 
 } // namespace kl
