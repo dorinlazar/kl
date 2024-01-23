@@ -20,6 +20,8 @@ set(LIBRARY_HEADERS
     include/kl/klbase.hpp
     include/kl/ds/array.hpp
     include/kl/ds/cursor.hpp
+    include/kl/ds/dict.hpp
+    include/kl/ds/pair.hpp
     include/kl/ds/tags.hpp
     include/kl/text.hpp
     include/kl/inttypes.hpp
