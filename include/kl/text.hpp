@@ -63,7 +63,7 @@ struct TextLiteral {
     if (literal[Size - 1]) {
       base.size++;
     }
-    for (TSize i = 0; i < Size; i++) {
+    for (TSize i = 0; i < Size; i++) { // compiler do your magic
       data[i] = literal[i];
     }
   }
