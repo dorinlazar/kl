@@ -1,5 +1,5 @@
-#include <kl/text.hpp>
-#include <kl/except.hpp>
+#include "kl/text.hpp"
+#include "kl/except.hpp"
 #include <cstring>
 
 namespace kl {
