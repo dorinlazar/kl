@@ -25,7 +25,7 @@ class Array {
 
   constexpr TSize strict_index(TSize index) const {
     if (index >= m_size || index < 0) [[unlikely]] {
-      throw RuntimeError("Out of range");
+      throw Exception("Out of range: {} out of {}", index, m_size);
     }
     return index;
   }
@@ -42,7 +42,7 @@ class Array {
       return;
     }
     if (TSIZE_MAX - count < m_size) [[unlikely]] {
-      throw RuntimeError("Out of range");
+      throw Exception("Out of range");
     }
     if (m_size + count > m_reserved) {
       auto required = std::max((m_size + count) - m_reserved, 8);

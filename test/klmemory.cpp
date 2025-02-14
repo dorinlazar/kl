@@ -48,8 +48,8 @@ TEST_F(KLMem, simple_unique_pointer_tests) {
   ASSERT_EQ(ptr->foo(), CANARY_VALUE);
   ASSERT_EQ((*ptr).foo(), CANARY_VALUE);
   ptr = nullptr;
-  EXPECT_THROW(ptr->foo(), kl::RuntimeError);
-  EXPECT_THROW((*ptr).foo(), kl::RuntimeError);
+  EXPECT_THROW(ptr->foo(), kl::Exception);
+  EXPECT_THROW((*ptr).foo(), kl::Exception);
   ASSERT_EQ(object_count, 119);
   ASSERT_EQ(deletion_count, 1);
   {
@@ -69,7 +69,7 @@ TEST_F(KLMem, simple_unique_pointer_tests) {
   ptr = kl::make_ptr<A>();
   delete ptr.release();
   ASSERT_EQ(ptr.get(), nullptr);
-  EXPECT_THROW(ptr->foo(), kl::RuntimeError);
+  EXPECT_THROW(ptr->foo(), kl::Exception);
 }
 
 template <typename T>
@@ -101,13 +101,13 @@ TEST_F(KLMem, array_tests) {
   ASSERT_EQ(object_count, 100);
   ASSERT_NE(ptr.get(), nullptr);
   ASSERT_EQ(ptr.size(), 100);
-  ASSERT_THROW(ptr[100], kl::RuntimeError);
+  ASSERT_THROW(ptr[100], kl::Exception);
   ASSERT_NO_THROW(ptr[99]);
   ptr.reset();
   ASSERT_EQ(object_count, 0);
   ASSERT_EQ(ptr.get(), nullptr);
   ASSERT_EQ(ptr.size(), 0);
-  ASSERT_THROW(ptr[0], kl::RuntimeError);
+  ASSERT_THROW(ptr[0], kl::Exception);
   ASSERT_NO_THROW(ptr.reset());
   ASSERT_EQ(ptr.size(), 0);
   ptr = kl::make_array_ptr<A>(30);
@@ -121,8 +121,8 @@ TEST_F(KLMem, array_tests) {
     ASSERT_EQ(object_count, 30);
     auto ptr2 = kl::make_array_ptr<A>(100);
     ASSERT_EQ(object_count, 130);
-    throw kl::RuntimeError("Hello");
-  } catch (const kl::RuntimeError&) {
+    throw kl::Exception("Hello");
+  } catch (const kl::Exception&) {
   }
   ASSERT_EQ(object_count, 30);
   delete[] (ptr.release());
@@ -200,8 +200,8 @@ TEST_F(KLMem, test_ref_counted_pointer_2) {
       ptr_moved = ptr;
       ASSERT_EQ(get_reference_count<A>(&(*ptr_moved)), 2);
       kl::ShareableMutablePointer<A> ptr3 = nullptr;
-      EXPECT_THROW((*ptr3).foo(), kl::RuntimeError);
-      EXPECT_THROW(ptr3->foo(), kl::RuntimeError);
+      EXPECT_THROW((*ptr3).foo(), kl::Exception);
+      EXPECT_THROW(ptr3->foo(), kl::Exception);
       ptr3 = std::move(ptr_moved);
       ASSERT_EQ(get_reference_count<A>(&(*ptr3)), 2);
       auto ptr4 = ptr3;
@@ -245,16 +245,16 @@ TEST_F(KLMem, shared_array_tests) {
   ASSERT_EQ(object_count, 100);
   ASSERT_NE(ptr.get(), nullptr);
   ASSERT_EQ(ptr.size(), 100);
-  ASSERT_THROW(ptr[100], kl::RuntimeError);
+  ASSERT_THROW(ptr[100], kl::Exception);
   ASSERT_NO_THROW(ptr[99]);
   ASSERT_EQ(&ptr[99], &ptr[-1]);
   ASSERT_EQ(&ptr[0], &ptr[-100]);
-  ASSERT_THROW(ptr[-101], kl::RuntimeError);
+  ASSERT_THROW(ptr[-101], kl::Exception);
   ptr.reset();
   ASSERT_EQ(object_count, 0);
   ASSERT_EQ(ptr.get(), nullptr);
   ASSERT_EQ(ptr.size(), 0);
-  ASSERT_THROW(ptr[0], kl::RuntimeError);
+  ASSERT_THROW(ptr[0], kl::Exception);
   ASSERT_NO_THROW(ptr.reset());
   ASSERT_EQ(ptr.size(), 0);
   ptr = kl::SharedArrayPointer<A>(30);
@@ -268,8 +268,8 @@ TEST_F(KLMem, shared_array_tests) {
     ASSERT_EQ(object_count, 30);
     auto ptr2 = kl::SharedArrayPointer<A>(100);
     ASSERT_EQ(object_count, 130);
-    throw kl::RuntimeError("Hello");
-  } catch (const kl::RuntimeError&) {
+    throw kl::Exception("Hello");
+  } catch (const kl::Exception&) {
   }
   ASSERT_EQ(object_count, 30);
   ptr = nullptr;
@@ -291,7 +291,7 @@ TEST_F(KLMem, shared_array_tests) {
     ASSERT_EQ(deletion_count, 0);
     ASSERT_EQ(creation_count, 0);
     ASSERT_NO_THROW(ptr4[99].foo());
-    ASSERT_THROW(ptr4[100].foo(), kl::RuntimeError);
+    ASSERT_THROW(ptr4[100].foo(), kl::Exception);
     ptr = ptr3;
   }
   ASSERT_EQ(object_count, 100);

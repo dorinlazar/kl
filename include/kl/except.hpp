@@ -1,15 +1,16 @@
 #pragma once
-#include <kl/text.hpp>
+#include <stdexcept>
+#include <format>
 
 namespace kl {
 
-class RuntimeError {
-  Text m_message;
+class Exception : std::exception {
+  std::string m_message;
 
 public:
-  explicit RuntimeError(const char* message);
-  explicit RuntimeError(Text message);
-  Text Message() const;
+  template <class... Args>
+  Exception(std::format_string<Args...> fmt, Args&&... args)
+      : m_message(std::format(fmt, std::forward<Args>(args)...)) {}
 };
 
 } // namespace kl

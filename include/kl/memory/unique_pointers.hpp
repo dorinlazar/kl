@@ -41,14 +41,14 @@ public:
 
   constexpr T* operator->() {
     if (m_ptr == nullptr) [[unlikely]] {
-      throw RuntimeError("Null reference");
+      throw Exception("Null dereference");
     }
     return m_ptr;
   }
 
   constexpr T& operator*() {
     if (m_ptr == nullptr) [[unlikely]] {
-      throw RuntimeError("Null reference");
+      throw Exception("Null dereference ");
     }
     return *m_ptr;
   }
@@ -105,13 +105,13 @@ public:
    */
   constexpr T& operator[](TSize index) {
     if (m_ptr == nullptr) [[unlikely]] {
-      throw RuntimeError("Null reference");
+      throw Exception("Null dereference");
     }
     if (index < 0) {
       index += m_size;
     }
     if (index >= m_size || index < 0) [[unlikely]] {
-      throw RuntimeError("Out of range");
+      throw Exception("Out of range: {} out of {}", index, m_size);
     }
     return m_ptr[index];
   }
