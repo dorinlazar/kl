@@ -16,8 +16,6 @@ endif(COVERAGE_ENABLED)
 set(LIBRARY_SOURCES src/text.cpp)
 
 set(LIBRARY_HEADERS
-    include/kl/flow.hpp
-    include/kl/klbase.hpp
     include/kl/ds/array.hpp
     include/kl/ds/cursor.hpp
     include/kl/ds/dict.hpp

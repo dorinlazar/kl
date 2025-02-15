@@ -3,7 +3,6 @@
 #include <kl/except.hpp>
 #include <kl/memory/deleters.hpp>
 #include <kl/inttypes.hpp>
-#include <kl/klbase.hpp>
 
 namespace kl {
 
@@ -75,7 +74,7 @@ class UniqueArrayPointer {
 
 public:
   constexpr UniqueArrayPointer() noexcept = default;
-  constexpr UniqueArrayPointer(T* ptr, TSize size) : m_ptr(ptr), m_size(kl::max(size, 0)) {}
+  constexpr UniqueArrayPointer(T* ptr, TSize size) : m_ptr(ptr), m_size(std::max(size, 0)) {}
   constexpr UniqueArrayPointer(UniqueArrayPointer&& ptr) {
     m_size = ptr.m_size;
     m_ptr = ptr.release();

@@ -2,7 +2,6 @@
 #include <kl/inttypes.hpp>
 #include <kl/ds/tags.hpp>
 #include <kl/except.hpp>
-#include <kl/klbase.hpp>
 #include <utility>
 #include <initializer_list>
 
